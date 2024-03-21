@@ -9,9 +9,9 @@ from enum import Enum
 import numpy as np
 import pandas as pd
 import socket
+import getpass
 import os
 import hashlib
-
 
 
 ##################
@@ -90,6 +90,15 @@ class Constant:
         MAIN_DIR = '/mnt/layline/project/eightk/'
         HUGGING_DIR = None
         HUGGING_DIR_TORCH = None
+    elif socket.gethostname() in ['Ruoqis-MacBook-Pro.local', 'ravpn-266-2-student-10-8-64-161.uniaccess.unimelb.edu.au',
+                                  'Ruoqis-MBP.net']:
+        MAIN_DIR = '/Users/ruoqig/punim2039/EightK/'
+        HUGGING_DIR = '/Users/ruoqig/punim2039/hugging/'
+        HUGGING_DIR_TORCH = '/Users/ruoqig/punim2039/hugging_torch/'
+    elif getpass.getuser() in ['ruoqig']:
+        MAIN_DIR = '/data/gpfs/projects/punim2119/EightK/'
+        HUGGING_DIR = '/data/gpfs/projects/punim2039/hugging/'
+        HUGGING_DIR_TORCH = '/data/gpfs/projects/punim2039/hugging_torch/'
     else:
         MAIN_DIR = '/data/gpfs/projects/punim2039/EightK/'
         HUGGING_DIR = '/data/gpfs/projects/punim2039/hugging/'
@@ -792,11 +801,12 @@ class TrainerParams:
         self.min_nb_chunks_in_cluster = None
         self.use_tf_models = None
         self.batch_size = None
-        self.adam_rate = None
-        self.patience = None # 5
-        self.monitor_loss = None  # ='loss'
+        self.adam_rate = 0.001
+        self.patience = 6  # number of epochs to wait before early stopping (5-10 for small models, 10-20 for big models)
+        self.monitor_metric = 'loss'  # Metric used to monitor for early stopping (loss or val_auc)
         self.max_epoch = None  # ='loss'
         self.train_on_gpu = None
+        self.tensorboard = False
 
         self.apply_filter = None
         self.filter_on_reuters = None
@@ -892,10 +902,9 @@ class Params:
         os.makedirs(save_dir, exist_ok=True)
         return save_dir
 
-
-    def get_res_dir(self,temp=True):
+    def get_res_dir(self, temp=True, s=""):
         # create the directory
-        s = self.dict_to_string_for_dir(self.train.__dict__)
+        s = s if s else self.dict_to_string_for_dir(self.train.__dict__)
         temp_str = '/temp'if temp else ''
         save_dir = Constant.MAIN_DIR + f'res{temp_str}/vec_pred/{s}/{self.enc.opt_model_type.name}/{self.enc.news_source.name}/'
         os.makedirs(save_dir, exist_ok=True)

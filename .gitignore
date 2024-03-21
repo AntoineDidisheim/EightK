@@ -1,0 +1,8 @@
+logs/
+test.ipynb
+__pycache__/
+.idea/
+.DS_Store
+.RData
+.Rhistory
+outputs
